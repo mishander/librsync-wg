@@ -21,4 +21,4 @@
  */
 
 
-rs_result rs_whole_run(rs_job_t *job, FILE *in_file, FILE *out_file);
+rs_result rs_whole_run(rs_job_t *job, FILE *in_file, FILE *out_file,int * curr_bytes, int * nStopFlag);

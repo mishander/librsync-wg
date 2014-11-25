@@ -225,7 +225,7 @@ rs_job_input_is_ending(rs_job_t *job)
 rs_result
 rs_job_drive(rs_job_t *job, rs_buffers_t *buf,
              rs_driven_cb in_cb, void *in_opaque,
-             rs_driven_cb out_cb, void *out_opaque)
+	rs_driven_cb out_cb, void *out_opaque, int * curr_bytes, int * nStopFlag)
 {
     rs_result       result, iores;
 
@@ -237,7 +237,7 @@ rs_job_drive(rs_job_t *job, rs_buffers_t *buf,
             if (iores != RS_DONE)
                 return iores;
         }
-
+		*curr_bytes = job->stats.copy_bytes;
         result = rs_job_iter(job, buf);
         if (result != RS_DONE  &&  result != RS_BLOCKED)
             return result;
@@ -247,8 +247,9 @@ rs_job_drive(rs_job_t *job, rs_buffers_t *buf,
             if (iores != RS_DONE)
                 return iores;
         }
-    } while (result != RS_DONE);
-
+	} while ( !((result == RS_DONE)||(*nStopFlag == 1)) );
+	buf->avail_out;
+	job->block_len;
     return result;
 }
 

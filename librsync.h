@@ -45,6 +45,7 @@
 #include <sys/types.h>
 #include <librsync-config.h>
 
+#define DllExport   __declspec( dllexport )
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -126,23 +127,21 @@ typedef enum {
                                  * This value should never be returned
                                  * to the caller.  */
     
-    RS_TEST_SKIPPED =   77,     /**< Test neither passed or failed. */
+    	RS_TEST_SKIPPED =   77,     /**< Test neither passed or failed. */
     
-    RS_IO_ERROR =	100,    /**< Error in file or network IO. */
-    RS_SYNTAX_ERROR =   101,    /**< Command line syntax error. */
-    RS_MEM_ERROR =	102,    /**< Out of memory. */
-    RS_INPUT_ENDED =	103,	/**< End of input file, possibly
-                                   unexpected. */
-    RS_BAD_MAGIC =      104,    /**< Bad magic number at start of
-                                   stream.  Probably not a librsync
-                                   file, or possibly the wrong kind of
-                                   file or from an incompatible
-                                   library version. */
-    RS_UNIMPLEMENTED =  105,    /**< Author is lazy. */
-    RS_CORRUPT =        106,    /**< Unbelievable value in stream. */
-    RS_INTERNAL_ERROR = 107,    /**< Probably a library bug. */
-    RS_PARAM_ERROR =    108     /**< Bad value passed in to library,
-                                 * probably an application bug. */
+    	RS_IO_ERROR =	100,    /**< Error in file or network IO. */
+		RS_SOURCE_IO_ERROR_ =	200,    /**< Error in file or network IO. */
+		RS_DEST_IO_ERROR =	300,    /**< Error in file or network IO. */
+		RS_DIFF_IO_ERROR =	400,    /**< Error in file or network IO. */
+		RS_SYNTAX_ERROR =   500,    /**< Command line syntax error. */
+		RS_MEM_ERROR   =	502,    /**< Out of memory. */
+		RS_INPUT_ENDED =	503,	/**< End of input file, possibly unexpected. */
+		RS_BAD_MAGIC =      504,    /**< Bad magic number at start of stream.  Probably not a librsync file, or possibly the wrong kind of file or from an incompatible library version. */
+		RS_UNIMPLEMENTED =  505,    /**< Author is lazy. */
+		RS_CORRUPT =        506,    /**< Unbelievable value in stream. */
+		RS_INTERNAL_ERROR = 507,    /**< Probably a library bug. */
+		RS_PARAM_ERROR =    508,    /**< Bad value passed in to library, * probably an application bug. */
+		RS_NO_SPACE = 512
 } rs_result;
 
 
@@ -208,7 +207,7 @@ int rs_log_stats(rs_stats_t const *stats);
 
 typedef struct rs_signature rs_signature_t;
 
-void rs_free_sumset(rs_signature_t *);
+
 void rs_sumset_dump(rs_signature_t const *);
 
 
@@ -311,7 +310,7 @@ typedef rs_result rs_driven_cb(rs_job_t *job, rs_buffers_t *buf,
 
 rs_result rs_job_drive(rs_job_t *job, rs_buffers_t *buf,
                        rs_driven_cb in_cb, void *in_opaque,
-                       rs_driven_cb out_cb, void *out_opaque);
+		rs_driven_cb out_cb, void *out_opaque,int * curr_bytes, int * nStopFlag);
 
 const rs_stats_t * rs_job_statistics(rs_job_t *job);
 
@@ -345,7 +344,7 @@ typedef rs_result rs_copy_cb(void *opaque, rs_long_t pos,
 rs_job_t *rs_patch_begin(rs_copy_cb *, void *copy_arg);
 
 
-rs_result rs_build_hash_table(rs_signature_t* sums);
+
 
 
 
@@ -366,18 +365,24 @@ extern int rs_inbuflen, rs_outbuflen;
  */
 void rs_mdfour_file(FILE *in_file, char *result);
 
-rs_result rs_sig_file(FILE *old_file, FILE *sig_file,
-                      size_t block_len, size_t strong_len, rs_stats_t *); 
+rs_result rs_build_hash_table(rs_signature_t* sums);
 
-rs_result rs_loadsig_file(FILE *, rs_signature_t **, rs_stats_t *);
 
-rs_result rs_file_copy_cb(void *arg, rs_long_t pos, size_t *len, void **buf);
+	rs_result  rs_sig_file(FILE *old_file, FILE *sig_file, size_t new_block_len, size_t strong_len, rs_stats_t *stats,int * curr_bytes, int * nStopFlag);
 
-rs_result rs_delta_file(rs_signature_t *, FILE *new_file, FILE *delta_file, rs_stats_t *);
+	rs_result  rs_loadsig_file(FILE * old_file, rs_signature_t ** sig, rs_stats_t * stats,int * curr_bytes, int * nStopFlag);
 
-rs_result rs_patch_file(FILE *basis_file, FILE *delta_file, FILE *new_file, rs_stats_t *);
+	rs_result rs_file_copy_cb(void *arg, rs_long_t pos, size_t *len, void **buf);
+
+	rs_result  rs_delta_file(rs_signature_t *, FILE *new_file, FILE *delta_file, rs_stats_t *,int * curr_bytes, int * nStopFlag);
+
+	rs_result  rs_patch_file(FILE *basis_file, FILE *delta_file, FILE *new_file, rs_stats_t *, int* curr_bytes, int * nStopFlag);
+void rs_free_sumset(rs_signature_t *);
 #endif /* ! RSYNC_NO_STDIO_INTERFACE */
 
+	//EXPORTS
+	int DllExport applyPatch(const wchar_t * sSourceFilePathName, const wchar_t * sDestFilePathName, const wchar_t * sDiffFilePathName, int * curr_bytes_decoded,int * nStopFlag);
+	int DllExport makePatch(const wchar_t * sSourceFilePathName, const wchar_t * sDestFilePathName, const wchar_t * sDiffFilePathName,const wchar_t * sSigFileName, int block_len, int strong_len, int * curr_bytes_encoded,int * nStopFlag);
 #ifdef __cplusplus
 }
 #endif

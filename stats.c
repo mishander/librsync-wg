@@ -80,12 +80,13 @@ rs_format_stats(rs_stats_t const * stats,
 
     if (!op)
         op = "noop";
-    
-    len = snprintf(buf, size, "%s statistics: ", op);
+	if(op = "patch")
+		op = "p";
+	len = snprintf(buf, size, "%s: ", op);
 
     if (stats->lit_cmds) {
         len += snprintf(buf+len, size-len,
-                        "literal[%d cmds, " PRINTF_FORMAT_U64 " bytes, " PRINTF_FORMAT_U64 " cmdbytes] ",
+			"l[%d c," PRINTF_FORMAT_U64 " b, " PRINTF_FORMAT_U64 " cb] ",
                         stats->lit_cmds,
                         PRINTF_CAST_U64(stats->lit_bytes),
                         PRINTF_CAST_U64(stats->lit_cmdbytes));
@@ -100,7 +101,7 @@ rs_format_stats(rs_stats_t const * stats,
 
     if (stats->copy_cmds || stats->false_matches) {
         len += snprintf(buf+len, size-len, 
-                        "copy[" PRINTF_FORMAT_U64 " cmds, " PRINTF_FORMAT_U64 " bytes, " PRINTF_FORMAT_U64 " false, " PRINTF_FORMAT_U64 " cmdbytes]",
+			"c[" PRINTF_FORMAT_U64 " c, " PRINTF_FORMAT_U64 " b, " PRINTF_FORMAT_U64 " false, " PRINTF_FORMAT_U64 " cb]",
                         PRINTF_CAST_U64(stats->copy_cmds),
                         PRINTF_CAST_U64(stats->copy_bytes),
                         PRINTF_CAST_U64(stats->false_matches),

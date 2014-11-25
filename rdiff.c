@@ -251,7 +251,7 @@ static rs_result rdiff_sig(poptContext opcon)
 
     rdiff_no_more_args(opcon);
     
-    result = rs_sig_file(basis_file, sig_file, block_len, strong_len, &stats);
+	result = rs_sig_file(basis_file, sig_file, block_len, strong_len, &stats,0,0);
 
     rs_file_close(sig_file);
     rs_file_close(basis_file);
@@ -285,7 +285,7 @@ static rs_result rdiff_delta(poptContext opcon)
 
     rdiff_no_more_args(opcon);
 
-    result = rs_loadsig_file(sig_file, &sumset, &stats);
+	result = rs_loadsig_file(sig_file, &sumset, &stats,0,0);
     if (result != RS_DONE)
         return result;
 
@@ -295,7 +295,7 @@ static rs_result rdiff_delta(poptContext opcon)
     if ((result = rs_build_hash_table(sumset)) != RS_DONE)
         return result;
 
-    result = rs_delta_file(sumset, new_file, delta_file, &stats);
+	result = rs_delta_file(sumset, new_file, delta_file, &stats,0,0);
 
     rs_free_sumset(sumset);
 
@@ -331,7 +331,7 @@ static rs_result rdiff_patch(poptContext opcon)
 
     rdiff_no_more_args(opcon);
 
-    result = rs_patch_file(basis_file, delta_file, new_file, &stats);
+	result = rs_patch_file(basis_file, delta_file, new_file, &stats,0,0);
 
     rs_file_close(new_file);
     rs_file_close(delta_file);

@@ -50,6 +50,7 @@
 #include <string.h>
 
 #include "librsync.h"
+#include "rollsum.h"
 #include "trace.h"
 #include "buf.h"
 #include "util.h"
@@ -63,7 +64,7 @@
  * File IO buffer sizes.
  */
 int rs_inbuflen = 16000, rs_outbuflen = 16000;
-
+Rollsum rs_cp;
 
 struct rs_filebuf {
         FILE *f;
@@ -75,7 +76,7 @@ struct rs_filebuf {
 rs_filebuf_t *rs_filebuf_new(FILE *f, size_t buf_len) 
 {
     rs_filebuf_t *pf = rs_alloc_struct(rs_filebuf_t);
-
+    RollsumInit(&rs_cp);
     pf->buf = rs_alloc(buf_len, "file buffer");
     pf->buf_len = buf_len;
     pf->f = f;
@@ -182,11 +183,14 @@ rs_result rs_outfilebuf_drain(rs_job_t *job, rs_buffers_t *buf, void *opaque)
         int result;
                 
         assert(present > 0);
-
+		RollsumUpdate(&rs_cp,fb->buf,present);
         result = fwrite(fb->buf, 1, present, f);
         if (present != result) {
+			int errorCode = errno;
             rs_error("error draining buf to file: %s",
-                     strerror(errno));
+				strerror(errorCode));
+			if(errorCode == ENOSPC)
+				return RS_NO_SPACE; 
             return RS_IO_ERROR;
         }
 
